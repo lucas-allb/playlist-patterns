@@ -7,7 +7,7 @@ public interface AudioTrack {
 
   /**
    * Título do áudio.
-   *
+
    * @return o título, preservado por todos os efeitos.
    */
   String getTitle();
