@@ -16,7 +16,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-
 public class PlaylistFacade {
 
     private final TrackCatalog catalog;
@@ -30,7 +29,6 @@ public class PlaylistFacade {
     this.catalog = catalog;
     this.plan = plan;
   }
-
 
   public PlaylistNode buildLibrary(String name) {
     if (name == null){
@@ -46,7 +44,6 @@ public class PlaylistFacade {
       return playlist;
   }
 
-
   public byte[] listen(String trackId) {
     if (trackId == null || trackId.trim().isEmpty()){
         throw new IllegalArgumentException();
@@ -58,7 +55,6 @@ public class PlaylistFacade {
     });
     return proxy.readBytes();
   }
-
 
   public AudioTrack preview(String trackId, double volume, int fadeInSamples) {
     if (trackId == null || trackId.trim().isEmpty()){
