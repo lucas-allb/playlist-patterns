@@ -1,28 +1,46 @@
 package com.playlist.decorator;
+import java.util.Locale;
 
-/**
- * Efeito que aplica uma rampa linear de volume nas primeiras amostras.
- */
+
 public final class FadeInEffect extends AudioEffect {
 
-  /**
-   * Cria o efeito de fade in.
-   *
-   * @param wrapped áudio decorado.
-   * @param sampleCount quantidade de amostras usadas na rampa.
-   */
-  public FadeInEffect(AudioTrack wrapped, int sampleCount) {
+  private final double durationSeconds;
+
+  public FadeInEffect(AudioTrack wrapped, double durationSeconds) {
     super(wrapped);
-    throw new UnsupportedOperationException("Exercício 4: implemente o construtor de FadeInEffect");
+      if (durationSeconds < 0.0) {
+          throw new IllegalArgumentException("A duração do FadeIn não pode ser negativa.");
+      }
+      this.durationSeconds = durationSeconds;
+  }
+
+  public FadeInEffect(AudioTrack wrapped, int durationSeconds){
+      this(wrapped, (double) durationSeconds);
   }
 
   @Override
   protected String describe() {
-    throw new UnsupportedOperationException("Exercício 4: implemente FadeInEffect.describe");
+      if (durationSeconds == (long) durationSeconds) {
+          return String.format(Locale.US, "fadeIn(%d)", (long) durationSeconds);
+      }
+      return String.format(Locale.US, "fadeIn(%.1f)", durationSeconds);
   }
 
   @Override
   public double[] getSamples() {
-    throw new UnsupportedOperationException("Exercício 4: implemente FadeInEffect.getSamples");
+      double[] original = wrapped.getSamples();
+      double[] processed = new double[original.length];
+      int total = original.length;
+
+      if (total == 0) {
+          return processed;
+      }
+
+      for (int i = 0; i < total; i++) {
+          double factor = (double) i / total;
+          processed[i] = original[i] * factor;
+      }
+
+      return processed;
   }
 }
