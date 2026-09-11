@@ -9,53 +9,29 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Sistema externo legado de catálogo de vinis.
- *
- * Este arquivo simula uma dependência de terceiros: você não pode alterá-lo.
- * Ele devolve registros em texto puro, separados por pipe, com a duração em milissegundos e o artista no formato
- * "SOBRENOME, NOME" em caixa alta.
- *
- * O layout de cada registro é:
- * {NUMERO_CATALOGO|TITULO|SOBRENOME, NOME|DURACAO_MS|PREMIUM}.
- */
+
 public class LegacyVinylCatalog {
 
   private static final String DEFAULT_RESOURCE = "/legacy/vinyl-catalog.psv";
 
   private final List<String> rows;
 
-  /**
-   * Cria o catálogo lendo o arquivo de dados embarcado no projeto.
-   */
+
   public LegacyVinylCatalog() {
     this.rows = readResource(DEFAULT_RESOURCE);
   }
 
-  /**
-   * Cria o catálogo a partir de uma lista de registros já em memória.
-   *
-   * @param rows registros no formato legado.
-   */
+
   public LegacyVinylCatalog(List<String> rows) {
     this.rows = List.copyOf(rows);
   }
 
-  /**
-   * Devolve todos os registros do catálogo legado.
-   *
-   * @return um array com os registros crus, no formato do sistema legado.
-   */
+
   public String[] fetchAllRecords() {
     return rows.toArray(new String[0]);
   }
 
-  /**
-   * Busca um único registro pelo número de catálogo.
-   *
-   * @param catalogNumber número de catálogo (ex.: {@code "VNL-0001"}).
-   * @return o registro cru correspondente ou {@code null} se não existir.
-   */
+
   public String findRecordByCatalogNumber(String catalogNumber) {
     if (catalogNumber == null) {
       return null;
