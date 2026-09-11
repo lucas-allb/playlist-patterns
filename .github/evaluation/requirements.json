@@ -1,0 +1,43 @@
+{
+  "projeto": "Playlist Patterns",
+  "notaMinima": 80,
+  "modo": "proporcional",
+  "requisitos": [
+    {
+      "id": 1,
+      "titulo": "Composite",
+      "peso": 20,
+      "classe": "com.playlist.evaluation.Req01CompositeTest"
+    },
+    {
+      "id": 2,
+      "titulo": "Adapter",
+      "peso": 20,
+      "classe": "com.playlist.evaluation.Req02AdapterTest"
+    },
+    {
+      "id": 3,
+      "titulo": "Proxy",
+      "peso": 20,
+      "classe": "com.playlist.evaluation.Req03ProxyTest"
+    },
+    {
+      "id": 4,
+      "titulo": "Decorator",
+      "peso": 20,
+      "classe": "com.playlist.evaluation.Req04DecoratorTest"
+    },
+    {
+      "id": 5,
+      "titulo": "Facade",
+      "peso": 15,
+      "classe": "com.playlist.evaluation.Req05FacadeTest"
+    },
+    {
+      "id": 6,
+      "titulo": "Qualidade de código (Checkstyle / Google Java Style)",
+      "peso": 5,
+      "tipo": "lint"
+    }
+  ]
+}

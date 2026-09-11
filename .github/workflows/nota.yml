@@ -1,0 +1,40 @@
+name: Nota
+
+on:
+  workflow_run:
+    workflows: ["Avaliador automático (fork)"]
+    types: [completed]
+
+permissions:
+  pull-requests: write
+  actions: read
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o relatório
+        uses: actions/download-artifact@v4
+        with:
+          name: nota-do-pr
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comentar no pull request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('nota.md', 'utf8');
+            const issue_number = Number(fs.readFileSync('pr-numero.txt', 'utf8').trim());
+            const marker = '<!-- avaliador-playlist -->';
+            const { owner, repo } = context.repo;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner, repo, issue_number, per_page: 100,
+            });
+            const previous = comments.find((comment) => comment.body.includes(marker));
+            if (previous) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: previous.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }

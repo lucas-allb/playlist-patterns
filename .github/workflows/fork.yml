@@ -1,0 +1,93 @@
+name: Avaliador automático
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: avaliador-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  ARQUIVOS_PROTEGIDOS: >-
+    .github
+    pom.xml
+    src/test
+    src/main/resources/legacy
+    src/main/java/com/playlist/core
+    src/main/java/com/playlist/composite/MediaItem.java
+    src/main/java/com/playlist/adapter/TrackCatalog.java
+    src/main/java/com/playlist/adapter/external
+    src/main/java/com/playlist/proxy/AudioStream.java
+    src/main/java/com/playlist/proxy/RemoteAudioStream.java
+    src/main/java/com/playlist/decorator/AudioTrack.java
+    src/main/java/com/playlist/decorator/RawAudioTrack.java
+
+jobs:
+  avaliar:
+    name: Corrigir entrega
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restaurar arquivos protegidos
+        id: guard
+        run: |
+          set -euo pipefail
+          BASE_REF="${{ github.base_ref }}"
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+          ALTERADOS=$(git diff --name-only FETCH_HEAD...HEAD -- $ARQUIVOS_PROTEGIDOS || true)
+          if [ -n "$ALTERADOS" ]; then
+            echo "$ALTERADOS"
+            git checkout FETCH_HEAD -- $ARQUIVOS_PROTEGIDOS
+            echo "tampered=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tampered=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - id: build
+        continue-on-error: true
+        run: mvn -B -ntp -DskipTests compile
+
+      - id: tests
+        continue-on-error: true
+        run: mvn -B -ntp test -Dmaven.test.failure.ignore=true
+
+      - id: lint
+        continue-on-error: true
+        run: mvn -B -ntp checkstyle:check -Dcheckstyle.failOnViolation=true
+
+      - name: Calcular a nota
+        id: nota
+        run: |
+          python3 .github/evaluation/grade.py \
+            --spec .github/evaluation/requirements.json \
+            --reports target/surefire-reports \
+            --build-status ${{ steps.build.outcome == 'success' && '0' || '1' }} \
+            --checkstyle-status ${{ steps.lint.outcome == 'success' && '0' || '1' }} \
+            --tampered ${{ steps.guard.outputs.tampered }} \
+            --out nota.md
+          echo "${{ github.event.pull_request.number }}" > pr-numero.txt
+
+      - name: Guardar o relatório para o workflow de publicação
+        uses: actions/upload-artifact@v4
+        with:
+          name: nota-do-pr
+          path: |
+            nota.md
+            pr-numero.txt
+
+      - name: Exigir a nota mínima
+        run: |
+          python3 -c "import sys; sys.exit(0 if float('${{ steps.nota.outputs.nota }}') >= float('${{ steps.nota.outputs.minimo }}') else 1)"
